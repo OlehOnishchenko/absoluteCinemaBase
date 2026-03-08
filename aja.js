@@ -10,9 +10,9 @@ const pool = new Pool({
     rejectUnauthorized: false
   }
   });
+
 const initializeDatabase = async () => {
   console.log('Створюю таблицю movies...');
-  
   const createTableQuery = `
     CREATE TABLE IF NOT EXISTS movies (
       id SERIAL PRIMARY KEY,
@@ -40,21 +40,29 @@ async function addMovie() {
    console.log("Фільм додано");
 }
 
-async function updateMovie() {
-   await pool.query("update movies set rating = 9.0 where id = 1");
-   console.log("Рейтинг оновлено");
+async function updateMovie(id) {
+   const result = await pool.query("update movies set rating = 9.0 where id = $1", [id]);
+   if (result.rowCount === 0) {
+       console.log("Айді не знайдено");
+   } else {
+       console.log("Рейтинг оновлено");
+   }
 }
 
-
-async function deleteMovie() {
-   await pool.query("delete from movies where id = 2");
-   console.log("Фільм видалено");
+async function deleteMovie(id) {
+   const result = await pool.query("delete from movies where id = $1", [id]);
+   if (result.rowCount === 0) {
+       console.log("Айді не знайдено");
+   } else {
+       console.log("Видалено");
+   }
 }
 
 async function run() {
     await initializeDatabase();
-}
+  
 const command = process.argv[2];
+const id = process.argv[3];
 
 switch(command) {
   case "list": {
@@ -81,8 +89,12 @@ case "delete": {
     }
 
 default: {
-      console.log("Usage:    1.node db.js list - khdghjfjhf; 2. node db.js add - pokgfopkhfgpohk; 3. node db.js update - ofkhpgkjh; 4.node db.js delete - [pglkhgfokhfokh.  All commands: help, list, add, update, delete.");
+      console.log("Usage:Usage: node aja.js list | add | update [id] | delete [id]");
       break;
    }
 }
+
+await pool.end();
+}
+
 run();
